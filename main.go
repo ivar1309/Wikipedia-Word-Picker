@@ -22,6 +22,11 @@ var randomArticleURLByLanguage = map[string]string{
 	"de": "https://de.wikipedia.org/wiki/Spezial:Zuf%C3%A4llige_Seite",
 }
 
+type Response struct {
+	Language string   `json:"language"`
+	Words    []string `json:"words"`
+}
+
 var db *sql.DB
 
 func initDB() error {
@@ -213,14 +218,19 @@ func pickHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response := Response{
+		Language: language,
+		Words:    firstNWords,
+	}
 	//fmt.Println(words)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(firstNWords)
+	json.NewEncoder(w).Encode(response)
 }
 
 func main() {
 	initDB()
 	http.HandleFunc("/pick", pickHandler)
 
+	log.Print("Listening on port: 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
